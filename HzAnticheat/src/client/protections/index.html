@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HzAnticheat - Panel Admin</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src='https://unpkg.com/tesseract.js@5.0.2/dist/tesseract.min.js'></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: transparent;
+            color: #ffffff;
+            overflow: hidden;
+            height: 100vh;
+        }
+
+        .admin-panel {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 800px;
+            height: 600px;
+            background: rgba(15, 23, 42, 0.95);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+            backdrop-filter: blur(15px);
+            z-index: 10000;
+            overflow: hidden;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .panel-header {
+            background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .panel-header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+
+        .close-btn {
+            background: rgba(239, 68, 68, 0.9);
+            border: none;
+            color: white;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 8px;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+
+        .close-btn:hover {
+            background: rgba(239, 68, 68, 1);
+            transform: scale(1.05);
+        }
+
+        .panel-content {
+            display: flex;
+            height: calc(600px - 80px);
+        }
+
+        .sidebar {
+            width: 200px;
+            background: rgba(30, 41, 59, 0.8);
+            padding: 24px 0;
+            border-right: 1px solid rgba(148, 163, 184, 0.2);
+        }
+
+        .nav-item {
+            padding: 12px 24px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 0.95rem;
+            margin-bottom: 4px;
+            border-left: 3px solid transparent;
+            color: rgba(203, 213, 225, 0.8);
+        }
+
+        .nav-item:hover {
+            background: rgba(59, 130, 246, 0.1);
+            border-left-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .nav-item.active {
+            background: rgba(59, 130, 246, 0.2);
+            border-left-color: #3b82f6;
+            color: #3b82f6;
+        }
+
+        .nav-item i {
+            width: 18px;
+            text-align: center;
+        }
+
+        .main-content {
+            flex: 1;
+            padding: 24px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.3);
+        }
+
+        .section {
+            display: none;
+        }
+
+        .section.active {
+            display: block;
+        }
+
+        .card {
+            background: rgba(30, 41, 59, 0.6);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .card h3 {
+            margin-bottom: 20px;
+            color: #3b82f6;
+            font-size: 1.25rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: rgba(30, 41, 59, 0.8);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid rgba(148, 163, 184, 0.2);
+            transition: transform 0.2s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+        }
+
+        .stat-card i {
+            font-size: 28px;
+            margin-bottom: 12px;
+            color: #3b82f6;
+        }
+
+        .stat-card h4 {
+            margin: 0;
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffffff;
+        }
+
+        .stat-card p {
+            margin: 8px 0 0 0;
+            font-size: 14px;
+            opacity: 0.7;
+            color: #cbd5e1;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            color: #cbd5e1;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 16px;
+            border: 1px solid rgba(148, 163, 184, 0.3);
+            border-radius: 8px;
+            background: rgba(30, 41, 59, 0.8);
+            color: #ffffff;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #3b82f6;
+            background: rgba(30, 41, 59, 0.9);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .form-control::placeholder {
+            color: rgba(203, 213, 225, 0.5);
+        }
+
+        .btn {
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+
+        .btn-primary {
+            background: #3b82f6;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+        }
+
+        .btn-danger {
+            background: #ef4444;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+        }
+
+        .btn-success {
+            background: #10b981;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #059669;
+            transform: translateY(-1px);
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-warning:hover {
+            background: #d97706;
+            transform: translateY(-1px);
+        }
+
+        .commands-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .form-row .form-group {
+            flex: 1;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            margin: 16px 0;
+        }
+
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 52px;
+            height: 28px;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(148, 163, 184, 0.3);
+            transition: .3s;
+            border-radius: 28px;
+        }
+
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 20px;
+            width: 20px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+
+        input:checked + .slider {
+            background-color: #3b82f6;
+        }
+
+        input:checked + .slider:before {
+            transform: translateX(24px);
+        }
+
+        .player-list {
+            max-height: 300px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.6);
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .player-item {
+            padding: 12px;
+            margin: 8px 0;
+            background: rgba(30, 41, 59, 0.8);
+            border-radius: 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-left: 3px solid #3b82f6;
+            transition: all 0.2s ease;
+        }
+
+        .player-item:hover {
+            background: rgba(30, 41, 59, 1);
+        }
+
+        .player-info {
+            flex: 1;
+        }
+
+        .player-info strong {
+            color: #3b82f6;
+        }
+
+        .player-info small {
+            color: #94a3b8;
+        }
+
+        .player-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-sm {
+            padding: 6px 12px;
+            font-size: 0.8rem;
+        }
+
+        .log-container {
+            max-height: 250px;
+            overflow-y: auto;
+            background: rgba(15, 23, 42, 0.8);
+            padding: 16px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            border: 1px solid rgba(148, 163, 184, 0.1);
+        }
+
+        .log-entry {
+            margin-bottom: 4px;
+            padding: 2px 0;
+        }
+
+        .notification {
+            position: fixed;
+            top: 24px;
+            right: 24px;
+            padding: 16px 24px;
+            border-radius: 8px;
+            color: white;
+            font-weight: 600;
+            z-index: 10001;
+            transform: translateX(400px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+            max-width: 300px;
+        }
+
+        .notification.show {
+            transform: translateX(0);
+        }
+
+        .notification.success {
+            background: #10b981;
+        }
+
+        .notification.error {
+            background: #ef4444;
+        }
+
+        .notification.info {
+            background: #3b82f6;
+        }
+
+        .ban-item {
+            background: rgba(239, 68, 68, 0.1);
+            padding: 16px;
+            margin-bottom: 12px;
+            border-radius: 8px;
+            border-left: 3px solid #ef4444;
+        }
+
+        .ban-item h5 {
+            margin: 0 0 8px 0;
+            color: #ef4444;
+            font-size: 1rem;
+        }
+
+        .ban-item p {
+            margin: 4px 0;
+            font-size: 0.85rem;
+            opacity: 0.8;
+        }
+
+        .filter-controls {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .filter-controls select {
+            flex: 1;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .loading i {
+            font-size: 24px;
+            margin-bottom: 12px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #94a3b8;
+        }
+
+        .empty-state i {
+            font-size: 48px;
+            margin-bottom: 16px;
+            opacity: 0.5;
+        }
+
+        /* Scrollbar personalizado */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: rgba(30, 41, 59, 0.3);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(59, 130, 246, 0.5);
+            border-radius: 3px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(59, 130, 246, 0.7);
+        }
+    </style>
+</head>
+<body>
+    <div class="admin-panel" id="adminPanel">
+        <div class="panel-header">
+            <h1><i class="fas fa-shield-alt"></i> HzAnticheat Admin</h1>
+            <button class="close-btn" onclick="closePanel()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        
+        <div class="panel-content">
+            <div class="sidebar">
+                <div class="nav-item active" data-section="dashboard">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>Dashboard</span>
+                </div>
+                <div class="nav-item" data-section="players">
+                    <i class="fas fa-users"></i>
+                    <span>Jugadores</span>
+                </div>
+                <div class="nav-item" data-section="commands">
+                    <i class="fas fa-terminal"></i>
+                    <span>Comandos</span>
+                </div>
+                <div class="nav-item" data-section="bans">
+                    <i class="fas fa-ban"></i>
+                    <span>Baneos</span>
+                </div>
+                <div class="nav-item" data-section="logs">
+                    <i class="fas fa-file-alt"></i>
+                    <span>Logs</span>
+                </div>
+            </div>
+            
+            <div class="main-content">
+                <!-- Dashboard Section -->
+                <div class="section active" id="dashboard">
+                    <div class="stats-grid">
+                        <div class="stat-card">
+                            <i class="fas fa-users"></i>
+                            <h4 id="playerCount">0</h4>
+                            <p>Jugadores Online</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-ban"></i>
+                            <h4 id="totalBans">0</h4>
+                            <p>Total Baneos</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <h4 id="totalErrors">0</h4>
+                            <p>Errores</p>
+                        </div>
+                        <div class="stat-card">
+                            <i class="fas fa-shield-alt"></i>
+                            <h4 style="color: #10b981;">Activo</h4>
+                            <p>Estado Sistema</p>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-cogs"></i> Configuración del Sistema</h3>
+                        <div class="toggle-container">
+                            <span>Modo Debug:</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="debugToggle">
+                                <span class="slider"></span>
+                            </label>
+                            <span>Modo Desarrollador:</span>
+                            <label class="toggle-switch">
+                                <input type="checkbox" id="devToggle">
+                                <span class="slider"></span>
+                            </label>
+                        </div>
+                        <button class="btn btn-primary" onclick="refreshStats()">
+                            <i class="fas fa-sync-alt"></i> Actualizar Estadísticas
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Players Section -->
+                <div class="section" id="players">
+                    <div class="card">
+                        <h3><i class="fas fa-users"></i> Jugadores en Línea</h3>
+                        <div class="player-list" id="onlinePlayersList">
+                            <div class="loading">
+                                <i class="fas fa-spinner"></i>
+                                <p>Cargando jugadores...</p>
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="loadOnlinePlayers()">
+                            <i class="fas fa-refresh"></i> Actualizar Lista
+                        </button>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-user-cog"></i> Acciones de Jugador</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="playerActionId">ID del Jugador:</label>
+                                <input type="text" id="playerActionId" class="form-control" placeholder="Ingresa el ID del jugador">
+                            </div>
+                            <div class="form-group">
+                                <label for="actionReason">Razón:</label>
+                                <input type="text" id="actionReason" class="form-control" placeholder="Motivo de la acción">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <button class="btn btn-warning" onclick="kickPlayerAction()">
+                                <i class="fas fa-user-times"></i> Expulsar
+                            </button>
+                            <button class="btn btn-danger" onclick="banPlayerAction()">
+                                <i class="fas fa-ban"></i> Banear
+                            </button>
+                            <button class="btn btn-primary" onclick="teleportToPlayerAction()">
+                                <i class="fas fa-location-arrow"></i> Teletransportar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Commands Section -->
+                <div class="section" id="commands">
+                    <div class="card">
+                        <h3><i class="fas fa-terminal"></i> Comandos Rápidos</h3>
+                        <div class="commands-grid">
+                            <button class="btn btn-success" onclick="executeCommand('heal')">
+                                <i class="fas fa-heart"></i> Curar
+                            </button>
+                            <button class="btn btn-warning" onclick="executeCommand('freeze')">
+                                <i class="fas fa-snowflake"></i> Congelar
+                            </button>
+                            <button class="btn btn-primary" onclick="executeCommand('unfreeze')">
+                                <i class="fas fa-fire"></i> Descongelar
+                            </button>
+                            <button class="btn btn-success" onclick="executeRevive()">
+                                <i class="fas fa-heartbeat"></i> Revivir
+                            </button>
+                            <button class="btn btn-danger" onclick="executeKill()">
+                                <i class="fas fa-skull"></i> Eliminar
+                            </button>
+                            <button class="btn btn-danger" onclick="executeClearArea()">
+                                <i class="fas fa-broom"></i> Limpiar Área
+                            </button>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="targetPlayerId">ID del Jugador (para revivir/eliminar):</label>
+                            <input type="text" id="targetPlayerId" class="form-control" placeholder="Ingresa el ID del jugador">
+                        </div>
+                        
+                        <div class="form-row">
+                            <input type="text" id="customCommand" class="form-control" placeholder="Comando personalizado..." style="flex: 1;">
+                            <button class="btn btn-primary" onclick="executeCustomCommand()">
+                                <i class="fas fa-play"></i> Ejecutar
+                            </button>
+                        </div>
+                        
+                        <button class="btn btn-success" onclick="reloadConfig()" style="margin-top: 16px;">
+                            <i class="fas fa-sync-alt"></i> Recargar Configuración
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Bans Section -->
+                <div class="section" id="bans">
+                    <div class="card">
+                        <h3><i class="fas fa-ban"></i> Sistema de Baneos</h3>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="banPlayerId">ID del Jugador:</label>
+                                <input type="text" id="banPlayerId" class="form-control" placeholder="ID del jugador a banear">
+                            </div>
+                            <div class="form-group">
+                                <label for="banReason">Razón del Baneo:</label>
+                                <input type="text" id="banReason" class="form-control" placeholder="Motivo del baneo">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="banDuration">Duración (minutos, 0 = permanente):</label>
+                                <input type="number" id="banDuration" class="form-control" placeholder="0" min="0">
+                            </div>
+                        </div>
+                        <button class="btn btn-danger" onclick="banPlayer()">
+                            <i class="fas fa-ban"></i> Banear Jugador
+                        </button>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-list"></i> Lista de Baneos Recientes</h3>
+                        <div class="form-row">
+                            <input type="number" id="banListCount" class="form-control" placeholder="Número de baneos a mostrar" value="10" min="1" max="50">
+                            <button class="btn btn-primary" onclick="loadBanList()">
+                                <i class="fas fa-refresh"></i> Cargar
+                            </button>
+                        </div>
+                        <div id="banList" style="max-height: 250px; overflow-y: auto; margin-top: 16px;">
+                            <div class="empty-state">
+                                <i class="fas fa-info-circle"></i>
+                                <p>No hay baneos recientes</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <h3><i class="fas fa-user-check"></i> Desbanear Jugador</h3>
+                        <div class="form-group">
+                            <label for="unbanIdentifier">Identificador del Jugador:</label>
+                            <input type="text" id="unbanIdentifier" class="form-control" placeholder="steam:xxxxxxxx o license:xxxxxxxx">
+                        </div>
+                        <button class="btn btn-success" onclick="unbanPlayer()">
+                            <i class="fas fa-user-check"></i> Desbanear
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Logs Section -->
+                <div class="section" id="logs">
+                    <div class="card">
+                        <h3><i class="fas fa-file-alt"></i> Logs del Sistema</h3>
+                        <div class="filter-controls">
+                            <select id="logFilter" class="form-control">
+                                <option value="all">Todos los Logs</option>
+                                <option value="admin">Acciones Admin</option>
+                                <option value="bans">Baneos</option>
+                                <option value="errors">Errores</option>
+                                <option value="anticheat">Anticheat</option>
+                                <option value="info">Información</option>
+                            </select>
+                            <button class="btn btn-primary" onclick="refreshLogs()">
+                                <i class="fas fa-refresh"></i> Actualizar
+                            </button>
+                            <button class="btn btn-danger" onclick="clearLogs()">
+                                <i class="fas fa-trash"></i> Limpiar
+                            </button>
+                        </div>
+                        <div id="logContainer" class="log-container">
+                            <div class="log-entry" style="color: #10b981;">[INFO] Panel de administración iniciado</div>
+                            <div class="log-entry" style="color: #f59e0b;">[WARN] Esperando conexión con el servidor...</div>
+                            <div class="log-entry" style="color: #3b82f6;">[ADMIN] Sistema de logs activado</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let isAdminPanelOpen = false;
+        let currentStats = {};
+        let allLogs = [];
+        let onlinePlayers = [];
+
+        $(document).ready(function() {
+            $('#adminPanel').hide();
+            
+            // Navigation handling
+            $('.nav-item').click(function() {
+                const section = $(this).data('section');
+                $('.nav-item').removeClass('active');
+                $(this).addClass('active');
+                $('.section').removeClass('active');
+                $('#' + section).addClass('active');
+                
+                addLogEntry(`[UI] Navegando a sección: ${section}`, 'info');
+                
+                // Auto-load players when entering players section
+                if (section === 'players') {
+                    setTimeout(() => loadOnlinePlayers(), 500);
+                }
+            });
+
+            // Message handling
+            window.addEventListener('message', function(event) {
+                const data = event.data;
+                
+                if (data.action === 'openAdminPanel') {
+                    openPanel();
+                } else if (data.action === 'closeAdminPanel') {
+                    closePanel();
+                } else if (data.action === 'updateStats') {
+                    updateDashboard(data.stats);
+                } else if (data.action === 'updateBanList') {
+                    updateBanList(data.bans);
+                } else if (data.action === 'updateOnlinePlayers') {
+                    updateOnlinePlayers(data.players);
+                } else if (data.action === 'showNotification') {
+                    showNotification(data.message, data.type);
+                }
+            });
+
+            // Event listeners
+            $('#debugToggle').change(function() {
+                toggleDebugMode();
+            });
+
+            $('#devToggle').change(function() {
+                toggleDevMode();
+            });
+            
+            $('#logFilter').change(function() {
+                filterLogs();
+            });
+
+            // ESC key to close
+            $(document).keyup(function(e) {
+                if (e.keyCode === 27 && isAdminPanelOpen) {
+                    closePanel();
+                }
+            });
+            
+            // Initialize logs
+            setTimeout(function() {
+                addLogEntry('[SYSTEM] Panel de administración inicializado', 'info');
+                addLogEntry('[SYSTEM] Todos los sistemas operativos', 'admin');
+            }, 500);
+        });
+
+        function openPanel() {
+            $('#adminPanel').fadeIn(300);
+            isAdminPanelOpen = true;
+            $.post(`https://${GetParentResourceName()}/setNuiFocus`, JSON.stringify({
+                hasFocus: true,
+                hasCursor: true
+            }));
+            refreshStats();
+            loadOnlinePlayers();
+        }
+
+        function closePanel() {
+            $('#adminPanel').fadeOut(300);
+            isAdminPanelOpen = false;
+            $.post(`https://${GetParentResourceName()}/setNuiFocus`, JSON.stringify({
+                hasFocus: false,
+                hasCursor: false
+            }));
+        }
+
+        function executeCommand(command) {
+            $.post(`https://${GetParentResourceName()}/adminCommand`, JSON.stringify({
+                command: command
+            }));
+            showNotification(`Comando ejecutado: ${command}`, 'success');
+            addLogEntry(`[ADMIN] Comando ejecutado: ${command}`, 'admin');
+        }
+
+        function executeRevive() {
+            const playerId = $('#targetPlayerId').val();
+            
+            if (!playerId) {
+                showNotification('Ingresa un ID de jugador para revivir', 'error');
+                return;
+            }
+            
+            $.post(`https://${GetParentResourceName()}/adminCommand`, JSON.stringify({
+                command: `revive ${playerId}`
+            }));
+            
+            showNotification(`Jugador ${playerId} revivido`, 'success');
+            addLogEntry(`[ADMIN] Jugador ${playerId} revivido`, 'admin');
+        }
+
+        function executeKill() {
+            const playerId = $('#targetPlayerId').val();
+            
+            if (!playerId) {
+                showNotification('Ingresa un ID de jugador para eliminar', 'error');
+                return;
+            }
+            
+            if (confirm(`¿Estás seguro de eliminar al jugador ID: ${playerId}?`)) {
+                $.post(`https://${GetParentResourceName()}/adminCommand`, JSON.stringify({
+                    command: `kill ${playerId}`
+                }));
+                
+                showNotification(`Jugador ${playerId} eliminado`, 'success');
+                addLogEntry(`[ADMIN] Jugador ${playerId} eliminado`, 'admin');
+            }
+        }
+
+        function executeClearArea() {
+            if (confirm('¿Limpiar área? Esto eliminará todos los vehículos en un radio amplio.')) {
+                $.post(`https://${GetParentResourceName()}/adminCommand`, JSON.stringify({
+                    command: 'dv 50000'
+                }));
+                
+                showNotification('Área limpiada (dv 50000)', 'success');
+                addLogEntry('[ADMIN] Área limpiada con comando dv 50000', 'admin');
+            }
+        }
+
+        function executeCustomCommand() {
+            const command = $('#customCommand').val().trim();
+            
+            if (!command) {
+                showNotification('Ingresa un comando', 'error');
+                return;
+            }
+
+            $.post(`https://${GetParentResourceName()}/adminCommand`, JSON.stringify({
+                command: command
+            }));
+
+            $('#customCommand').val('');
+            showNotification(`Comando ejecutado: ${command}`, 'success');
+            addLogEntry(`[ADMIN] Comando personalizado: ${command}`, 'admin');
+        }
+
+        function toggleDebugMode() {
+            const isChecked = $('#debugToggle').prop('checked');
+            $.post(`https://${GetParentResourceName()}/toggleDebugMode`, JSON.stringify({
+                enabled: isChecked
+            }));
+            showNotification(`Modo Debug ${isChecked ? 'activado' : 'desactivado'}`, 'success');
+            addLogEntry(`[CONFIG] Modo Debug ${isChecked ? 'activado' : 'desactivado'}`, 'admin');
+        }
+
+        function toggleDevMode() {
+            const isChecked = $('#devToggle').prop('checked');
+            $.post(`https://${GetParentResourceName()}/toggleDevMode`, JSON.stringify({
+                enabled: isChecked
+            }));
+            showNotification(`Modo Desarrollador ${isChecked ? 'activado' : 'desactivado'}`, 'success');
+            addLogEntry(`[CONFIG] Modo Desarrollador ${isChecked ? 'activado' : 'desactivado'}`, 'admin');
+        }
+
+        function reloadConfig() {
+            $.post(`https://${GetParentResourceName()}/reloadConfig`, JSON.stringify({}));
+            showNotification('Configuración recargada', 'success');
+            addLogEntry('[CONFIG] Configuración del servidor recargada', 'admin');
+        }
+
+        function refreshStats() {
+            $.post(`https://${GetParentResourceName()}/getStats`, JSON.stringify({}));
+        }
+
+        function loadOnlinePlayers() {
+            // Show loading state
+            $('#onlinePlayersList').html(`
+                <div class="loading">
+                    <i class="fas fa-spinner"></i>
+                    <p>Cargando jugadores...</p>
+                </div>
+            `);
+            
+            // Request players from server
+            $.post(`https://${GetParentResourceName()}/getOnlinePlayers`, JSON.stringify({}));
+            
+            // Simulate loading for demo purposes (remove in production)
+            setTimeout(() => {
+                if ($('#onlinePlayersList .loading').length > 0) {
+                    // If still loading after 3 seconds, show demo players
+                    const demoPlayers = [
+                        { id: 1, name: 'Jugador Demo 1', ping: 45 },
+                        { id: 2, name: 'Jugador Demo 2', ping: 67 },
+                        { id: 3, name: 'Admin Test', ping: 23 }
+                    ];
+                    updateOnlinePlayers(demoPlayers);
+                    addLogEntry('[DEMO] Mostrando jugadores de demostración', 'info');
+                }
+            }, 3000);
+        }
+
+        function banPlayer() {
+            const playerId = $('#banPlayerId').val();
+            const reason = $('#banReason').val();
+            const duration = $('#banDuration').val() || 0;
+
+            if (!playerId || !reason) {
+                showNotification('Completa todos los campos requeridos', 'error');
+                return;
+            }
+
+            $.post(`https://${GetParentResourceName()}/banPlayer`, JSON.stringify({
+                playerId: playerId,
+                reason: reason,
+                duration: parseInt(duration)
+            }));
+
+            $('#banPlayerId').val('');
+            $('#banReason').val('');
+            $('#banDuration').val('');
+            showNotification('Jugador baneado', 'success');
+        }
+
+        function unbanPlayer() {
+            const identifier = $('#unbanIdentifier').val();
+
+            if (!identifier) {
+                showNotification('Ingresa un identificador válido', 'error');
+                return;
+            }
+
+            $.post(`https://${GetParentResourceName()}/unbanPlayer`, JSON.stringify({
+                identifier: identifier
+            }));
+
+            $('#unbanIdentifier').val('');
+            showNotification('Jugador desbaneado', 'success');
+        }
+
+        function loadBanList() {
+            const count = $('#banListCount').val() || 10;
+            $.post(`https://${GetParentResourceName()}/getBanList`, JSON.stringify({
+                count: parseInt(count)
+            }));
+        }
+
+        function kickPlayerAction() {
+            const playerId = $('#playerActionId').val();
+            const reason = $('#actionReason').val() || 'Sin razón especificada';
+
+            if (!playerId) {
+                showNotification('Ingresa un ID de jugador', 'error');
+                return;
+            }
+
+            $.post(`https://${GetParentResourceName()}/kickPlayer`, JSON.stringify({
+                playerId: playerId,
+                reason: reason
+            }));
+
+            $('#playerActionId').val('');
+            $('#actionReason').val('');
+            showNotification('Jugador expulsado', 'success');
+        }
+
+        function banPlayerAction() {
+            const playerId = $('#playerActionId').val();
+            const reason = $('#actionReason').val() || 'Sin razón especificada';
+
+            if (!playerId) {
+                showNotification('Ingresa un ID de jugador', 'error');
+                return;
+            }
+
+            $.post(`https://${GetParentResourceName()}/banPlayer`, JSON.stringify({
+                playerId: playerId,
+                reason: reason,
+                duration: 0
+            }));
+
+            $('#playerActionId').val('');
+            $('#actionReason').val('');
+            showNotification('Jugador baneado', 'success');
+        }
+
+        function teleportToPlayerAction() {
+            const playerId = $('#playerActionId').val();
+
+            if (!playerId) {
+                showNotification('Ingresa un ID de jugador', 'error');
+                return;
+            }
+
+            $.post(`https://${GetParentResourceName()}/teleportToPlayer`, JSON.stringify({
+                playerId: playerId
+            }));
+
+            $('#playerActionId').val('');
+            showNotification('Teletransportado al jugador', 'success');
+        }
+
+        function updateDashboard(stats) {
+            currentStats = stats;
+            $('#playerCount').text(stats.playerCount || 0);
+            $('#totalBans').text(stats.totalBans || 0);
+            $('#totalErrors').text(stats.totalErrors || 0);
+            $('#debugToggle').prop('checked', stats.debugMode);
+            $('#devToggle').prop('checked', stats.devMode);
+        }
+
+        function updateBanList(bans) {
+            const banList = $('#banList');
+            banList.empty();
+
+            if (!bans || bans.length === 0) {
+                banList.html(`
+                    <div class="empty-state">
+                        <i class="fas fa-info-circle"></i>
+                        <p>No hay baneos recientes</p>
+                    </div>
+                `);
+                return;
+            }
+
+            bans.forEach(function(ban) {
+                const banItem = $(`
+                    <div class="ban-item">
+                        <h5>${ban.identifier || 'Desconocido'}</h5>
+                        <p><strong>Razón:</strong> ${ban.reason || 'Sin razón especificada'}</p>
+                        <p><strong>Fecha:</strong> ${ban.timestamp ? new Date(ban.timestamp * 1000).toLocaleString() : 'Desconocida'}</p>
+                        <p><strong>Admin:</strong> ${ban.admin || 'Sistema'}</p>
+                    </div>
+                `);
+                banList.append(banItem);
+            });
+        }
+
+        function updateOnlinePlayers(players) {
+            const playersList = $('#onlinePlayersList');
+            playersList.empty();
+            onlinePlayers = players || [];
+
+            if (!players || players.length === 0) {
+                playersList.html(`
+                    <div class="empty-state">
+                        <i class="fas fa-users-slash"></i>
+                        <p>No hay jugadores en línea</p>
+                    </div>
+                `);
+                return;
+            }
+
+            players.forEach(function(player) {
+                const playerItem = $(`
+                    <div class="player-item">
+                        <div class="player-info">
+                            <strong>ID: ${player.id}</strong> - ${player.name || 'Desconocido'}
+                            <br><small>Ping: ${player.ping || 'N/A'}ms</small>
+                        </div>
+                        <div class="player-actions">
+                            <button class="btn btn-sm btn-warning" onclick="kickPlayerById(${player.id})" title="Expulsar">
+                                <i class="fas fa-user-times"></i>
+                            </button>
+                            <button class="btn btn-sm btn-danger" onclick="banPlayerById(${player.id})" title="Banear">
+                                <i class="fas fa-ban"></i>
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="teleportToPlayer(${player.id})" title="Teletransportar">
+                                <i class="fas fa-location-arrow"></i>
+                            </button>
+                        </div>
+                    </div>
+                `);
+                playersList.append(playerItem);
+            });
+            
+            // Update player count in dashboard
+            $('#playerCount').text(players.length);
+            addLogEntry(`[SYSTEM] ${players.length} jugadores cargados`, 'info');
+        }
+
+        function kickPlayerById(playerId) {
+            if (confirm(`¿Expulsar al jugador ID: ${playerId}?`)) {
+                $.post(`https://${GetParentResourceName()}/kickPlayer`, JSON.stringify({
+                    playerId: playerId,
+                    reason: 'Expulsado por administrador'
+                }));
+                showNotification('Jugador expulsado', 'success');
+                addLogEntry(`[ADMIN] Jugador ${playerId} expulsado`, 'admin');
+                // Refresh player list
+                setTimeout(() => loadOnlinePlayers(), 1000);
+            }
+        }
+
+        function banPlayerById(playerId) {
+            const reason = prompt('Razón del baneo:');
+            if (reason !== null) {
+                $.post(`https://${GetParentResourceName()}/banPlayer`, JSON.stringify({
+                    playerId: playerId,
+                    reason: reason || 'Baneado por administrador',
+                    duration: 0
+                }));
+                showNotification('Jugador baneado', 'success');
+                addLogEntry(`[ADMIN] Jugador ${playerId} baneado: ${reason}`, 'admin');
+                // Refresh player list
+                setTimeout(() => loadOnlinePlayers(), 1000);
+            }
+        }
+
+        function teleportToPlayer(playerId) {
+            $.post(`https://${GetParentResourceName()}/teleportToPlayer`, JSON.stringify({
+                playerId: playerId
+            }));
+            showNotification(`Teletransportado al jugador ${playerId}`, 'success');
+            addLogEntry(`[ADMIN] Teletransportado al jugador ${playerId}`, 'admin');
+        }
+
+        function addLogEntry(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = {
+                message: message,
+                type: type,
+                timestamp: timestamp,
+                full: `[${timestamp}] ${message}`
+            };
+            
+            allLogs.unshift(logEntry);
+            
+            if (allLogs.length > 100) {
+                allLogs = allLogs.slice(0, 100);
+            }
+            
+            updateLogDisplay();
+        }
+
+        function filterLogs() {
+            updateLogDisplay();
+        }
+
+        function updateLogDisplay() {
+            const filter = $('#logFilter').val();
+            const logContainer = $('#logContainer');
+            
+            let filteredLogs = allLogs;
+            
+            if (filter !== 'all') {
+                filteredLogs = allLogs.filter(log => log.type === filter);
+            }
+            
+            if (filteredLogs.length === 0) {
+                logContainer.html('<div style="color: #94a3b8; text-align: center; padding: 20px;">No hay logs para mostrar</div>');
+                return;
+            }
+            
+            const logHtml = filteredLogs.map(log => {
+                let color = '#ffffff';
+                switch(log.type) {
+                    case 'admin': color = '#3b82f6'; break;
+                    case 'bans': color = '#ef4444'; break;
+                    case 'errors': color = '#ef4444'; break;
+                    case 'anticheat': color = '#f59e0b'; break;
+                    case 'info': color = '#10b981'; break;
+                    default: color = '#ffffff';
+                }
+                return `<div class="log-entry" style="color: ${color};">${log.full}</div>`;
+            }).join('');
+            
+            logContainer.html(logHtml);
+            logContainer.scrollTop(logContainer[0].scrollHeight);
+        }
+
+        function clearLogs() {
+            if (confirm('¿Limpiar todos los logs?')) {
+                allLogs = [];
+                $('#logContainer').html('<div class="log-entry" style="color: #10b981;">[INFO] Logs limpiados</div>');
+                showNotification('Logs limpiados', 'success');
+            }
+        }
+
+        function refreshLogs() {
+            $.post(`https://${GetParentResourceName()}/getLogs`, JSON.stringify({}));
+            showNotification('Logs actualizados', 'info');
+            addLogEntry('[SYSTEM] Logs actualizados desde el servidor', 'info');
+        }
+
+        function showNotification(message, type = 'info') {
+            const notification = $(`
+                <div class="notification ${type}">
+                    <i class="fas fa-${type === 'success' ? 'check' : type === 'error' ? 'exclamation-triangle' : 'info'}"></i>
+                    ${message}
+                </div>
+            `);
+
+            $('body').append(notification);
+            
+            setTimeout(() => {
+                notification.addClass('show');
+            }, 100);
+
+            setTimeout(() => {
+                notification.removeClass('show');
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
