@@ -1,6 +1,6 @@
 # 🛡️ Hz-Anticheat - Sistema de Protección Avanzado para FiveM
 
-<div align="center">
+<div align="center"> 
 
 ![Version](https://img.shields.io/badge/version-1.2.1-blue.svg)
 ![FiveM](https://img.shields.io/badge/FiveM-5181+-green.svg)
