@@ -30,7 +30,7 @@
 - [📱 Comandos](#-comandos)
 - [🔄 Compatibilidad](#-compatibilidad)
 - [🆘 Soporte](#-soporte)
-- [📄 Licencia](#-licencia)
+- [📄 Licencia](#-licencia) 
 
 ---
 
