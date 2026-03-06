@@ -7,7 +7,7 @@
 ![License](https://img.shields.io/badge/license-Proprietary-red.svg)
 ![Status](https://img.shields.io/badge/status-Active-brightgreen.svg)
 
-**Desarrollado por HZ - FivemSoluciones - Codigosparajuegos**
+**Desarrollado por HZ - FivemSoluciones -  Codigosparajuegos**
 
 *Sistema de anticheat profesional y completo para servidores FiveM*
  
