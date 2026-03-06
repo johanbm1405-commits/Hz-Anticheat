@@ -17,7 +17,7 @@
 
 --- 
 
-## 📋 Tabla de Contenidos
+## 📋 Tabla de Contenidos 
 
 - [🔍 Descripción](#-descripción)
 - [✨ Características Principales](#-características-principales)
