@@ -32,7 +32,7 @@
 - [🆘 Soporte](#-soporte)
 - [📄 Licencia](#-licencia)
 
----
+--- 
 
 ## 🔍 Descripción
 
